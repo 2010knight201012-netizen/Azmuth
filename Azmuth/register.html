@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Register</title>
+
+<style>
+
+body{
+font-family:Arial;
+background:#020617;
+color:white;
+display:flex;
+justify-content:center;
+align-items:center;
+height:100vh;
+}
+
+.box{
+background:#1e293b;
+padding:40px;
+border-radius:12px;
+width:320px;
+text-align:center;
+}
+
+input{
+width:100%;
+padding:12px;
+margin:10px 0;
+border:none;
+border-radius:6px;
+}
+
+button{
+width:100%;
+padding:12px;
+background:#22c55e;
+border:none;
+border-radius:6px;
+color:white;
+font-size:16px;
+cursor:pointer;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="box">
+
+<h2>Create Account</h2>
+
+<input id="user" placeholder="Username">
+<input id="pass" type="password" placeholder="Password">
+
+<button onclick="register()">Register</button>
+
+<p id="msg"></p>
+
+</div>
+
+<script>
+
+function register(){
+
+let u=document.getElementById("user").value
+let p=document.getElementById("pass").value
+
+let db=JSON.parse(localStorage.getItem("users")||"{}")
+
+if(db[u]){
+
+document.getElementById("msg").innerText="User already exists"
+return
+
+}
+
+db[u]={pass:p,score:0}
+
+localStorage.setItem("users",JSON.stringify(db))
+
+localStorage.setItem("currentUser",u)
+
+window.location="game.html"
+
+}
+
+</script>
+
+</body>
+</html>

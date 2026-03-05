@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<title>WordSprint</title>
+
+<style>
+
+body{
+font-family:Arial;
+background:linear-gradient(135deg,#020617,#0f172a);
+color:white;
+text-align:center;
+margin:0;
+}
+
+#game{
+max-width:950px;
+margin:auto;
+margin-top:30px;
+padding:20px;
+}
+
+.card{
+background:rgba(30,41,59,0.9);
+padding:25px;
+border-radius:14px;
+margin-bottom:25px;
+box-shadow:0 10px 25px rgba(0,0,0,0.5);
+}
+
+#sentence{
+font-size:22px;
+line-height:1.7;
+}
+
+.correct{color:#22c55e}
+.current{background:#334155;padding:4px;border-radius:4px}
+.wrong{color:#ef4444}
+
+#input{
+margin-top:20px;
+padding:14px;
+width:70%;
+font-size:18px;
+border-radius:8px;
+border:none;
+outline:none;
+}
+
+.stats{
+display:flex;
+justify-content:space-around;
+flex-wrap:wrap;
+margin-top:20px;
+}
+
+.stat{
+background:#020617;
+padding:15px;
+border-radius:10px;
+width:150px;
+margin:5px;
+}
+
+.stat span{
+font-size:22px;
+font-weight:bold;
+}
+
+.comboFlash{
+color:#facc15;
+font-size:22px;
+font-weight:bold;
+}
+
+#track{
+margin-top:25px;
+background:#020617;
+height:70px;
+border-radius:12px;
+position:relative;
+overflow:hidden;
+}
+
+#finish{
+position:absolute;
+right:5px;
+top:0;
+bottom:0;
+width:6px;
+background:white;
+}
+
+#car{
+position:absolute;
+left:10px;
+top:20px;
+font-size:30px;
+transition:left 0.2s;
+}
+
+button{
+padding:12px 25px;
+background:#22c55e;
+border:none;
+border-radius:8px;
+color:white;
+cursor:pointer;
+margin-top:20px;
+font-size:16px;
+}
+
+button:hover{
+background:#16a34a;
+}
+
+#leaderboard li{
+margin:8px 0;
+font-size:18px;
+}
+
+#about{
+margin-top:60px;
+background:#020617;
+padding:50px;
+border-top:1px solid #1e293b;
+}
+
+.credit{
+margin-top:20px;
+font-weight:bold;
+color:#38bdf8;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div id="game">
+
+<h1>WordSprint</h1>
+
+<h2>Time Left: <span id="timer">60</span>s</h2>
+
+<div class="card">
+
+<div id="sentence"></div>
+
+<input id="input" placeholder="Start typing..." autocomplete="off">
+
+<div class="stats">
+
+<div class="stat">WPS<br><span id="wps">0</span></div>
+
+<div class="stat">Accuracy<br><span id="accuracy">100%</span></div>
+
+<div class="stat">Score<br><span id="score">0</span></div>
+
+<div class="stat">Combo<br><span id="combo">1x</span></div>
+
+</div>
+
+<div id="track">
+
+<div id="car">✈️</div>
+<div id="finish">🏁</div>
+
+</div>
+
+<button onclick="startGame()">Start Game</button>
+
+</div>
+
+<div class="card">
+
+<h2>Leaderboard (Top 5)</h2>
+
+<ul id="board"></ul>
+
+</div>
+
+</div>
+
+<div id="about">
+
+<h2>About WordSprint</h2>
+
+<p>
+WordSprint is a competitive typing race game. Type words quickly to move your
+car toward the finish line. The faster and more accurately you type, the higher
+your score and ranking on the leaderboard.
+</p>
+
+<p>
+Features include WPM tracking, combo multipliers, racing animation,
+and a competitive leaderboard.
+</p>
+
+<div class="credit">
+Made By Anshum
+</div>
+
+</div>
+
+<script>
+
+const subjects=["The scientist","A brave knight","The explorer","A clever fox","The astronaut","The engineer","The detective","A young artist","The captain","The professor"]
+
+const verbs=["discovered","explored","investigated","built","found","observed","followed","protected","studied","created"]
+
+const objects=["a hidden planet","a secret cave","an ancient castle","a strange machine","a lost treasure","a mysterious signal","a forgotten temple","a powerful engine","a secret map","a magical forest"]
+
+const endings=["in the dark forest","beyond the mountains","during the storm","under the ocean","in the silent night","before sunrise","inside the laboratory","near the old village","on the distant island","beneath ancient ruins"]
+
+function generateSentence(){
+
+return subjects[Math.floor(Math.random()*subjects.length)]+" "+
+verbs[Math.floor(Math.random()*verbs.length)]+" "+
+objects[Math.floor(Math.random()*objects.length)]+" "+
+endings[Math.floor(Math.random()*endings.length)]+"."
+
+}
+
+let words=[]
+let index=0
+let correct=0
+let totalTyped=0
+let score=0
+let combo=1
+
+let time=60
+let timerInterval
+
+function startGame(){
+
+time=60
+index=0
+correct=0
+totalTyped=0
+score=0
+combo=1
+
+input.disabled=false
+
+timer.innerText=time
+scoreEl.innerText=0
+wpmEl.innerText=0
+accuracyEl.innerText="100%"
+comboEl.innerText="1x"
+
+input.value=""
+input.focus()
+
+newSentence()
+
+car.style.left="10px"
+
+clearInterval(timerInterval)
+timerInterval=setInterval(updateTimer,1000)
+
+}
+
+function newSentence(){
+
+let text=generateSentence()
+
+words=text.split(" ")
+
+render()
+
+}
+
+function updateTimer(){
+
+time--
+timer.innerText=time
+
+if(time<=0){
+
+clearInterval(timerInterval)
+finishGame()
+
+}
+
+}
+
+function render(){
+
+let html=""
+
+words.forEach((w,i)=>{
+
+if(i<index) html+="<span class='correct'>"+w+"</span> "
+else if(i===index) html+="<span class='current'>"+w+"</span> "
+else html+=w+" "
+
+})
+
+sentence.innerHTML=html
+
+}
+
+input.addEventListener("input",function(){
+
+let typed=input.value.trim()
+
+let currentWord=words[index]
+
+if(currentWord && currentWord.startsWith(typed)){
+
+input.style.color="#22c55e"
+
+}else{
+
+input.style.color="#ef4444"
+
+}
+
+})
+
+input.addEventListener("keydown",function(e){
+
+if(e.key===" "){
+
+e.preventDefault()
+
+let typed=input.value.trim()
+
+totalTyped++
+
+if(typed===words[index]){
+
+index++
+correct++
+
+combo++
+
+score+=10*combo
+
+}else{
+
+combo=1
+
+}
+
+comboEl.innerText=combo+"x"
+
+scoreEl.innerText=score
+
+let acc=Math.round((correct/totalTyped)*100)
+accuracyEl.innerText=acc+"%"
+
+let progress=index/words.length
+
+car.style.left=(progress*80)+"%"
+
+let wpm=Math.round((correct/5)/((60-time)/60 || 1))
+wpmEl.innerText=wpm
+
+input.value=""
+input.style.color="white"
+
+if(index>=words.length){
+
+index=0
+newSentence()
+
+}
+
+render()
+
+}
+
+})
+
+function finishGame(){
+
+input.disabled=true
+
+let user=localStorage.getItem("currentUser")
+
+let db=JSON.parse(localStorage.getItem("users")||"{}")
+
+if(score>db[user].score){
+
+db[user].score=score
+
+}
+
+localStorage.setItem("users",JSON.stringify(db))
+
+updateBoard()
+
+alert("Race Finished! Score: "+score)
+
+}
+
+function updateBoard(){
+
+let db=JSON.parse(localStorage.getItem("users")||"{}")
+
+let arr=[]
+
+for(let u in db){
+
+arr.push({name:u,score:db[u].score})
+
+}
+
+arr.sort((a,b)=>b.score-a.score)
+
+arr=arr.slice(0,5)
+
+board.innerHTML=""
+
+arr.forEach(u=>{
+
+let li=document.createElement("li")
+
+li.innerText=u.name+" - "+u.score
+
+board.appendChild(li)
+
+})
+
+}
+
+const scoreEl=document.getElementById("score")
+const wpmEl=document.getElementById("wps")
+const accuracyEl=document.getElementById("accuracy")
+const comboEl=document.getElementById("combo")
+
+updateBoard()
+
+</script>
+
+</body>
+</html>
