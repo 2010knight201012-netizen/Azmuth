@@ -149,7 +149,7 @@ color:#38bdf8;
 
 <div id="sentence"></div>
 
-<input id="input" placeholder="Start typing..." autocomplete="off">
+<input id="input" placeholder="Start typing..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
 
 <div class="stats">
 
@@ -321,13 +321,14 @@ input.style.color="#ef4444"
 
 })
 
-input.addEventListener("keydown",function(e){
+input.addEventListener("input",function(){
 
-if(e.key===" "){
+let value=input.value
 
-e.preventDefault()
+// detect when user typed space
+if(value.endsWith(" ")){
 
-let typed=input.value.trim()
+let typed=value.trim()
 
 totalTyped++
 
@@ -335,9 +336,7 @@ if(typed===words[index]){
 
 index++
 correct++
-
 combo++
-
 score+=10*combo
 
 }else{
@@ -347,14 +346,12 @@ combo=1
 }
 
 comboEl.innerText=combo+"x"
-
 scoreEl.innerText=score
 
 let acc=Math.round((correct/totalTyped)*100)
 accuracyEl.innerText=acc+"%"
 
 let progress=index/words.length
-
 car.style.left=(progress*80)+"%"
 
 let wpm=Math.round((correct/5)/((60-time)/60 || 1))
